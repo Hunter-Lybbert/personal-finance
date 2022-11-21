@@ -3,3 +3,6 @@ local.env
 
 experimentation/
 *.ipynb
+
+credentials.json
+client_secret.json
