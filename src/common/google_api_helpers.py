@@ -1,11 +1,24 @@
 """Helper functions for authenticating to google APIs"""
 
+import os
+from pathlib import Path
 from typing import Any
 
 import pandas as pd
 from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import client, file, tools
+
+
+def get_path_to_google_creds() -> Path:
+    """
+    Use pathlib to get path to google creds.
+
+    :return: a pathlib.Path object
+    """
+    relative_path = Path(__file__).parent.parent.parent
+    full_path = os.path.join(relative_path, "google_creds/client_secret.json")
+    return Path(full_path)
 
 
 def get_google_creds() -> None:
