@@ -3,10 +3,7 @@
 import os
 from pathlib import Path
 
-from src.common.google_api_helpers import (
-    get_google_creds,
-    get_path_to_google_creds
-)
+from src.common.google_api_helpers import get_google_creds, get_path_to_google_creds
 
 
 def test_get_path_to_google_creds() -> None:
