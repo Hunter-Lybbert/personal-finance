@@ -13,11 +13,9 @@ repos:
     -   id: black
         language: python
         types: [ python ]
-        # args: ["--help", "--line-length=88"]
-        args: [-l, '99']
+        args: [-l, '90']
 -   repo: https://github.com/pycqa/isort
     rev: 5.10.1
     hooks:
       - id: isort
-        args: [--profile=black, -l=99] #, --multi-line=VERTICAL_HANGING_INDENT]
-        # name: isort (python)
+        args: [--profile=black, -l=90]
