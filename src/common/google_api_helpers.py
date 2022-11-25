@@ -10,36 +10,45 @@ from httplib2 import Http
 from oauth2client import client, file, tools
 
 
-def get_path_to_google_creds() -> Path:
+def get_path_to_google_creds(creds_directory: str) -> Path:
     """
     Use pathlib to get path to google creds.
+
+    :param creds_directory: directory that the google api credits are saved in
 
     :return: a pathlib.Path object
     """
     relative_path = Path(__file__).parent.parent.parent
-    full_path = os.path.join(relative_path, "google_creds/client_secret.json")
+    full_path = os.path.join(relative_path, creds_directory)
     return Path(full_path)
 
 
-def get_google_creds() -> None:
+def get_google_creds(creds_directory: str) -> None:
     """
     Get google creds for this project.
+
+    :param creds_directory: directory that the google api credits are saved in
 
     :return: None
     """
     scopes = "https://www.googleapis.com/auth/spreadsheets"
 
+    full_path = get_path_to_google_creds(creds_directory=creds_directory)
+
     # Setup the Sheets API
-    store = file.Storage("credentials.json")
+    store = file.Storage(filename=os.path.join(full_path, "credentials.json"))
     creds = store.get()
     if not creds or creds.invalid:
-        flow = client.flow_from_clientsecrets("client_secret.json", scopes)
+        flow = client.flow_from_clientsecrets(
+            filename=os.path.join(full_path, "client_secret.json"),
+            scope=scopes,
+        )
         creds = tools.run_flow(flow, store)
     service = build("sheets", "v4", http=creds.authorize(Http()))
     return service
 
 
-def get_google_sheet(spreadsheet_id: str, range_name: str) -> Any:
+def get_google_sheet(service: Any, spreadsheet_id: str, range_name: str) -> Any:
     """
     Retrieve sheet data using OAuth credentials and Google Python API.
 
@@ -48,15 +57,6 @@ def get_google_sheet(spreadsheet_id: str, range_name: str) -> Any:
 
     :returns: Some type of API result about sheets
     """
-    scopes = "https://www.googleapis.com/auth/spreadsheets"
-
-    # Setup the Sheets API
-    store = file.Storage("credentials.json")
-    creds = store.get()
-    if not creds or creds.invalid:
-        flow = client.flow_from_clientsecrets("client_secret.json", scopes)
-        creds = tools.run_flow(flow, store)
-    service = build("sheets", "v4", http=creds.authorize(Http()))
 
     # Call the Sheets API
     gsheet = (
