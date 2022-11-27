@@ -9,7 +9,7 @@ from src.common.google_api_helpers import (
     get_google_creds,
     get_google_sheet,
     get_path_to_google_creds,
-    gsheet2df,
+    gsheet_to_df,
 )
 
 
@@ -34,19 +34,30 @@ def test_get_google_creds() -> None:
 
     :return: None
     """
+    scopes = "https://www.googleapis.com/auth/spreadsheets"
+    creds_directory = "google_creds"
+    service = get_google_creds(
+        creds_directory=creds_directory,
+        scopes=scopes,
+    )
+
     SPREADSHEET_ID = "1giRkGWGEw18NYc1b7LhxYvq9eRBF2F-XMJv_i_LG3tE"
     RANGE_NAME = "testing"
-
-    service = get_google_creds("google_creds")
     gsheet = get_google_sheet(
         service=service, spreadsheet_id=SPREADSHEET_ID, range_name=RANGE_NAME
     )
-    df = gsheet2df(gsheet=gsheet)
+
+    datatypes = {"Name": str, "Pay": float, "Column 1": int, "Column 2": int}
+    df = gsheet_to_df(gsheet=gsheet, datatypes=datatypes)
+
     expected = pd.DataFrame(
-        [[2, 3], [4, 5], [6, 7], [8, 9]], columns=["Column 1", "Column 2"]
+        [
+            ["Joe", 1.12, 2, 3],
+            ["James", 1.01, 4, 5],
+            ["Jack", 1.92, 6, 7],
+            ["Jane", 1.34, 8, 9],
+        ],
+        columns=["Name", "Pay", "Column 1", "Column 2"],
     )
-    print(df, expected, sep="\n")
-    print(df.columns == expected.columns)
-    print(df.values == expected.values)
-    print(df["Column 1"].dtype, expected["Column 1"].dtype)
+
     assert df.equals(expected)

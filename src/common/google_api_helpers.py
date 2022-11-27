@@ -2,19 +2,22 @@
 
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, Union
 
 import pandas as pd
 from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import client, file, tools
 
+DEFAULT_CREDENTIALS_FILE = "credentials.json"
+CREDENTIALS_FILE = "client_secret.json"
+
 
 def get_path_to_google_creds(creds_directory: str) -> Path:
     """
     Use pathlib to get path to google creds.
 
-    :param creds_directory: directory that the google api credits are saved in
+    :param creds_directory: directory that the Google api credits are saved in
 
     :return: a pathlib.Path object
     """
@@ -23,24 +26,26 @@ def get_path_to_google_creds(creds_directory: str) -> Path:
     return Path(full_path)
 
 
-def get_google_creds(creds_directory: str) -> None:
+def get_google_creds(
+    creds_directory: str,
+    scopes: Union[list[str], str],
+) -> Any:
     """
     Get google creds for this project.
 
-    :param creds_directory: directory that the google api credits are saved in
+    :param creds_directory: directory that the Google api credits are saved in
+    :param scopes:
 
-    :return: None
+    :return: Google API credential results
     """
-    scopes = "https://www.googleapis.com/auth/spreadsheets"
-
     full_path = get_path_to_google_creds(creds_directory=creds_directory)
 
-    # Setup the Sheets API
-    store = file.Storage(filename=os.path.join(full_path, "credentials.json"))
+    # Set up the Sheets API
+    store = file.Storage(filename=os.path.join(full_path, DEFAULT_CREDENTIALS_FILE))
     creds = store.get()
     if not creds or creds.invalid:
         flow = client.flow_from_clientsecrets(
-            filename=os.path.join(full_path, "client_secret.json"),
+            filename=os.path.join(full_path, CREDENTIALS_FILE),
             scope=scopes,
         )
         creds = tools.run_flow(flow, store)
@@ -48,10 +53,15 @@ def get_google_creds(creds_directory: str) -> None:
     return service
 
 
-def get_google_sheet(service: Any, spreadsheet_id: str, range_name: str) -> Any:
+def get_google_sheet(
+    service: Any,
+    spreadsheet_id: str,
+    range_name: str,
+) -> Any:
     """
     Retrieve sheet data using OAuth credentials and Google Python API.
 
+    :param service: Dictionary of result from authenticating to google API.
     :param spreadsheet_id: the id of the spreadsheet to access
     :param range_name: the name of specific sheet
 
@@ -68,26 +78,21 @@ def get_google_sheet(service: Any, spreadsheet_id: str, range_name: str) -> Any:
     return gsheet
 
 
-def gsheet2df(gsheet):
-    """Converts Google sheet data to a Pandas DataFrame.
-    Note: This script assumes that your data contains a header file on the first row!
-
-    Also note that the Google API returns 'none' from empty cells - in order for the code
-    below to work, you'll need to make sure your sheet doesn't contain empty cells,
-    or update the code to account for such instances.
-
+def gsheet_to_df(
+    gsheet: Any,
+    datatypes: dict[str, Any],
+) -> pd.DataFrame:
     """
-    header = gsheet.get("values", [])[0]  # Assumes first line is header!
-    values = gsheet.get("values", [])[1:]  # Everything else is data.
-    if not values:
-        print("No data found.")
-    else:
-        all_data = []
-        for col_id, col_name in enumerate(header):
-            column_data = []
-            for row in values:
-                column_data.append(row[col_id])
-            ds = pd.Series(data=column_data, name=col_name)
-            all_data.append(ds)
-        df = pd.concat(all_data, axis=1)
-        return df
+    Convert data from a Google spreadsheet to Pandas DataFrame.
+
+    :param gsheet: the result of the gsheet query and execution
+    :param datatypes: A dictionary of
+
+    :return: pd.DataFrame of the gsheet data
+    """
+    gsheet_data = gsheet.get("values")
+    df = pd.DataFrame(
+        data=gsheet_data[1:],
+        columns=gsheet_data[0],
+    ).astype(dtype=datatypes)
+    return df
