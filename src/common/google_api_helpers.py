@@ -9,6 +9,8 @@ from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import client, file, tools
 
+API_SERVER_NAME = "sheets"
+API_VERSION = "v4"
 DEFAULT_CREDENTIALS_FILE = "credentials.json"
 CREDENTIALS_FILE = "client_secret.json"
 
@@ -49,7 +51,7 @@ def get_google_creds(
             scope=scopes,
         )
         creds = tools.run_flow(flow, store)
-    service = build("sheets", "v4", http=creds.authorize(Http()))
+    service = build(API_SERVER_NAME, API_VERSION, http=creds.authorize(Http()))
     return service
 
 
@@ -96,3 +98,36 @@ def gsheet_to_df(
         columns=gsheet_data[0],
     ).astype(dtype=datatypes)
     return df
+
+
+def create_worksheet(
+    service: Any,
+    spreadsheet_id: str,
+    new_worksheet_name: str,
+) -> None:
+    """
+    Create a new worksheet inside an existing spreadsheet.
+
+    :param service: Dict of Spreadsheet Authentication data
+    :param spreadsheet_id: the id of the spreadsheet to create new worksheet in.
+    :param new_worksheet_name: name for the new worksheet
+
+    :return:
+    """
+
+    sheet_properties = {
+        "title": new_worksheet_name,
+        "tabColor": {
+            "red": 0.44,
+            "blue": 0.50,
+            "green": 0.99,
+        },
+    }
+    add_sheet_request = {"properties": {sheet_properties}}
+    request_body = {"requests": [{"addSheet": {add_sheet_request}}]}
+
+    spreadsheets = service.spreadsheets()
+    spreadsheets.batchUpdate(
+        spreadsheet_id=spreadsheet_id,
+        body=request_body,
+    )

@@ -6,6 +6,7 @@ from pathlib import Path
 import pandas as pd
 
 from src.common.google_api_helpers import (
+    create_worksheet,
     get_google_creds,
     get_google_sheet,
     get_path_to_google_creds,
@@ -61,3 +62,18 @@ def test_get_google_creds() -> None:
     )
 
     assert df.equals(expected)
+
+
+def test_create_worksheet() -> None:
+    """
+    Test the create_worksheet() function.
+
+    :return: None
+    """
+    SPREADSHEET_ID = "1giRkGWGEw18NYc1b7LhxYvq9eRBF2F-XMJv_i_LG3tE"
+    service = get_path_to_google_creds(creds_directory="google_creds")
+    create_worksheet(
+        service=service,
+        spreadsheet_id=SPREADSHEET_ID,
+        new_worksheet_name="testing_sheet_2",
+    )
