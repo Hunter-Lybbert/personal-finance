@@ -102,32 +102,55 @@ def gsheet_to_df(
 
 def create_worksheet(
     service: Any,
-    spreadsheet_id: str,
+    spreadsheetId: str,
+    sheetId: int,
     new_worksheet_name: str,
 ) -> None:
     """
     Create a new worksheet inside an existing spreadsheet.
 
     :param service: Dict of Spreadsheet Authentication data
-    :param spreadsheet_id: the id of the spreadsheet to create new worksheet in.
+    :param spreadsheetId: the id of the spreadsheet to create new worksheet in
+    :param sheetId: an integer associated with the specific worksheet  (it's in the url)
     :param new_worksheet_name: name for the new worksheet
 
     :return:
     """
-
+    # TODO Catch errors for invalid worksheet names and so on.
     sheet_properties = {
         "title": new_worksheet_name,
-        "tabColor": {
-            "red": 0.44,
-            "blue": 0.50,
-            "green": 0.99,
-        },
+        "sheetId": sheetId,
+        # TODO decide what properties we need to include.
     }
-    add_sheet_request = {"properties": {sheet_properties}}
-    request_body = {"requests": [{"addSheet": {add_sheet_request}}]}
+    add_sheet_request = {"properties": sheet_properties}
+    request_body = {"requests": [{"addSheet": add_sheet_request}]}
 
     spreadsheets = service.spreadsheets()
     spreadsheets.batchUpdate(
-        spreadsheet_id=spreadsheet_id,
+        spreadsheetId=spreadsheetId,
         body=request_body,
-    )
+    ).execute()
+
+
+def delete_worksheet(
+    service: Any,
+    spreadsheetId: str,
+    sheetId: int,
+) -> None:
+    """
+    Delete a specific worksheet from a given Spreadsheet.
+
+    :param service: Dict of Spreadsheet Authentication data
+    :param spreadsheetId: the id of the spreadsheet to create new worksheet in
+    :param sheetId: an integer associated with the specific worksheet (it's in the url)
+
+    :return: None
+    """
+    # TODO Catch errors for invalid worksheet sheetId's and so on.
+    delete_request = {"sheetId": sheetId}
+    request_body = {"requests": [{"deleteSheet": delete_request}]}
+    spreadsheets = service.spreadsheets()
+    spreadsheets.batchUpdate(
+        spreadsheetId=spreadsheetId,
+        body=request_body,
+    ).execute()
