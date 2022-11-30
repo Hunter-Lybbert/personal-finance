@@ -2,7 +2,7 @@
 
 import os
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 import pandas as pd
 from googleapiclient.discovery import build
