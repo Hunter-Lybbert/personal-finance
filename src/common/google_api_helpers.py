@@ -2,7 +2,7 @@
 
 import os
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 import pandas as pd
 from googleapiclient.discovery import build
@@ -100,6 +100,31 @@ def gsheet_to_df(
     return df
 
 
+def copy_worksheet(
+    service: Any,
+    spreadsheetId: str,
+    sheetId_to_copy: int,
+) -> dict[Any, Any]:
+    """
+    Create a copy of an existing sheet in the specified spreadsheet.
+
+    :param service: Dict of Spreadsheet Authentication data
+    :param spreadsheetId: the id of the spreadsheet to copy new worksheet in
+    :param sheetId_to_copy: the integer for the specific sheet to copy
+
+    :return:
+    """
+    request_body = {
+        "destination_spreadsheet_id": spreadsheetId,
+    }
+    request = (
+        service.spreadsheets()
+        .sheets()
+        .copyTo(spreadsheetId=spreadsheetId, sheetId=sheetId_to_copy, body=request_body)
+    )
+    return request.execute()
+
+
 def create_worksheet(
     service: Any,
     spreadsheetId: str,
@@ -114,7 +139,7 @@ def create_worksheet(
     :param sheetId: an integer associated with the specific worksheet  (it's in the url)
     :param new_worksheet_name: name for the new worksheet
 
-    :return:
+    :return: None
     """
     # TODO Catch errors for invalid worksheet names and so on.
     sheet_properties = {
