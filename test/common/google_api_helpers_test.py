@@ -1,4 +1,9 @@
-"""Tests for helper functions for authenticating to google APIs found in src/common/google_api_helpers.py"""
+"""
+Tests for helper functions for authenticating to google APIs found in src/common/google_api_helpers.py
+
+The url for the sheet used in all the tests is as follows:
+https://docs.google.com/spreadsheets/d/1giRkGWGEw18NYc1b7LhxYvq9eRBF2F-XMJv_i_LG3tE/edit#gid=0
+"""
 
 import os
 import time
@@ -7,6 +12,7 @@ from pathlib import Path
 import pandas as pd
 
 from src.common.google_api_helpers import (
+    copy_worksheet,
     create_worksheet,
     delete_worksheet,
     get_google_creds,
@@ -78,6 +84,15 @@ def test_delete_worksheet() -> None:
         creds_directory="google_creds",
         scopes=["https://www.googleapis.com/auth/spreadsheets"],
     )
+    create_worksheet(
+        service=service,
+        spreadsheetId=SPREADSHEET_ID,
+        sheetId=sheetId,
+        new_worksheet_name="testing_delete_function",
+    )
+
+    time.sleep(5)
+
     delete_worksheet(
         service=service,
         spreadsheetId=SPREADSHEET_ID,
@@ -104,10 +119,30 @@ def test_create_worksheet() -> None:
         new_worksheet_name="testing_sheet_8",
     )
 
-    time.sleep(30)
+    time.sleep(5)
 
     delete_worksheet(
         service=service,
         spreadsheetId=SPREADSHEET_ID,
         sheetId=sheetId,
+    )
+
+
+def test_copy_worksheet():
+    """
+    Test the test_create_copy_of_sheet() function.
+
+    :return:
+    """
+    SPREADSHEET_ID = "1giRkGWGEw18NYc1b7LhxYvq9eRBF2F-XMJv_i_LG3tE"
+    sheetId = 1164849594
+    service = get_google_creds(
+        creds_directory="google_creds",
+        scopes=["https://www.googleapis.com/auth/spreadsheets"],
+    )
+
+    copy_worksheet(
+        service=service,
+        spreadsheetId=SPREADSHEET_ID,
+        sheetId_to_copy=sheetId,
     )
