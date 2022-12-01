@@ -179,3 +179,56 @@ def delete_worksheet(
         spreadsheetId=spreadsheetId,
         body=request_body,
     ).execute()
+
+
+def clear_values_in_worksheet(
+    service: Any,
+    spreadsheetId: str,
+    sheetId: int,
+) -> Any:
+    """
+    Clear the user entered values from a sheet, leaving formats there.
+
+    :param service: Dict of Spreadsheet Authentication data
+    :param spreadsheetId: the id of the spreadsheet to clear worksheet in
+    :param sheetId: an integer associated with the specific worksheet (it's in the url)
+
+    :return: the response dict from execution
+    """
+    updateCells = {"range": {"sheetId": sheetId}, "fields": "userEnteredValue"}
+    request_body = {"requests": [{"updateCells": updateCells}]}
+
+    spreadsheets = service.spreadsheets()
+    response = spreadsheets.batchUpdate(
+        spreadsheetId=spreadsheetId,
+        body=request_body,
+    ).execute()
+
+    return response
+
+
+def rename_worksheet(
+    service: Any,
+    spreadsheetId: str,
+    sheetId: int,
+    newName: str,
+) -> Any:
+    """
+
+    :return:
+    """
+    updateSheet = {
+        "updateSheetProperties": {
+            "properties": {"sheetId": sheetId, "title": newName},
+            "fields": "title",
+        }
+    }
+    request_body = {"requests": [updateSheet]}
+
+    spreadsheets = service.spreadsheets()
+    response = spreadsheets.batchUpdate(
+        spreadsheetId=spreadsheetId,
+        body=request_body,
+    ).execute()
+
+    return response

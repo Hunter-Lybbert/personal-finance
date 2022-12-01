@@ -12,6 +12,7 @@ from pathlib import Path
 import pandas as pd
 
 from src.common.google_api_helpers import (
+    clear_values_in_worksheet,
     copy_worksheet,
     create_worksheet,
     delete_worksheet,
@@ -19,6 +20,7 @@ from src.common.google_api_helpers import (
     get_google_sheet,
     get_path_to_google_creds,
     gsheet_to_df,
+    rename_worksheet,
 )
 
 
@@ -128,7 +130,7 @@ def test_create_worksheet() -> None:
     )
 
 
-def test_copy_worksheet():
+def test_copy_worksheet() -> None:
     """
     Test the test_create_copy_of_sheet() function.
 
@@ -146,3 +148,45 @@ def test_copy_worksheet():
         spreadsheetId=SPREADSHEET_ID,
         sheetId_to_copy=sheetId,
     )
+
+
+def test_clear_values_in_worksheet() -> None:
+    """
+    Test the clear_values_in_worksheet() function.
+
+    :return:
+    """
+    SPREADSHEET_ID = "1giRkGWGEw18NYc1b7LhxYvq9eRBF2F-XMJv_i_LG3tE"
+    sheetId = 81190407
+    service = get_google_creds(
+        creds_directory="google_creds",
+        scopes=["https://www.googleapis.com/auth/spreadsheets"],
+    )
+    response = clear_values_in_worksheet(
+        service=service,
+        spreadsheetId=SPREADSHEET_ID,
+        sheetId=sheetId,
+    )
+    assert response is not None
+
+
+def test_rename_worksheet() -> None:
+    """
+    Test the rename_worksheet() function.
+
+    :return:
+    """
+    SPREADSHEET_ID = "1giRkGWGEw18NYc1b7LhxYvq9eRBF2F-XMJv_i_LG3tE"
+    newName = "New Name for New Sheet"
+    sheetId = 81190407
+    service = get_google_creds(
+        creds_directory="google_creds",
+        scopes=["https://www.googleapis.com/auth/spreadsheets"],
+    )
+    response = rename_worksheet(
+        service=service,
+        spreadsheetId=SPREADSHEET_ID,
+        sheetId=sheetId,
+        newName=newName,
+    )
+    assert response is not None
