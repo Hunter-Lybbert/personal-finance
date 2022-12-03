@@ -1,6 +1,7 @@
 """This script will create a new months budget sheet."""
 
 from src.common.google_api_helpers import (
+    GridRangeType,
     clear_values_in_worksheet,
     copy_worksheet,
     get_google_creds,
@@ -13,22 +14,25 @@ BUDGET_SPREADSHEET_ID = (
     if REAL
     else "1MT-ViKfZajZ0gZaHQ0aYDFHWU94mBcvUVlj7B_oOcRk"
 )
-# SHEET_ID = 1116040579 if REAL else 1116040579
 
 if __name__ == "__main__":
-    sheetIds = [1116040579, 960916036]
     newNames = ["Transactions December", "Summary December"]
-
+    GridRanges = [
+        GridRangeType(1116040579, 4, 80, 1, 9),
+        GridRangeType(
+            960916036, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex
+        ),
+    ]
     service = get_google_creds(
         creds_directory="google_creds",
         scopes=["https://www.googleapis.com/auth/spreadsheets"],
     )
 
-    for sheetId, newName in zip(sheetIds, newNames):
+    for GridRange, newName in zip(GridRanges, newNames):
         response = copy_worksheet(
             service=service,
             spreadsheetId=BUDGET_SPREADSHEET_ID,
-            sheetId_to_copy=sheetId,
+            sheetId_to_copy=GridRange.sheetId,
         )
         new_sheetId: int
         if response is not None:
@@ -46,5 +50,6 @@ if __name__ == "__main__":
         response3 = clear_values_in_worksheet(
             service=service,
             spreadsheetId=BUDGET_SPREADSHEET_ID,
-            sheetId=new_sheetId,
+            # TODO Fix the parameters later.
+            GridRange=GridRange,
         )

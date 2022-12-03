@@ -1,8 +1,9 @@
 """Helper functions for authenticating to google APIs"""
 
 import os
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 import pandas as pd
 from googleapiclient.discovery import build
@@ -13,6 +14,17 @@ API_SERVER_NAME = "sheets"
 API_VERSION = "v4"
 DEFAULT_CREDENTIALS_FILE = "credentials.json"
 CREDENTIALS_FILE = "client_secret.json"
+
+
+@dataclass(frozen=True)
+class GridRangeType:
+    """The GridRange data type containing info for range of sheet."""
+
+    sheetId: int
+    startRowIndex: int
+    endRowIndex: int
+    startColumnIndex: int
+    endColumnIndex: int
 
 
 def get_path_to_google_creds(creds_directory: str) -> Path:
@@ -184,18 +196,24 @@ def delete_worksheet(
 def clear_values_in_worksheet(
     service: Any,
     spreadsheetId: str,
-    sheetId: int,
+    GridRange: Union[GridRangeType, dict[str, int]],
 ) -> Any:
     """
     Clear the user entered values from a sheet, leaving formats there.
 
     :param service: Dict of Spreadsheet Authentication data
     :param spreadsheetId: the id of the spreadsheet to clear worksheet in
-    :param sheetId: an integer associated with the specific worksheet (it's in the url)
+    :param GridRange: a dataclass for GridRange object from Google sheets API
+    https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/other#gridrange
 
     :return: the response dict from execution
     """
-    updateCells = {"range": {"sheetId": sheetId}, "fields": "userEnteredValue"}
+    if isinstance(GridRange, GridRangeType):
+        GridRange = GridRange.__dict__
+    elif isinstance(GridRange, dict):
+        pass
+
+    updateCells = {"range": GridRange, "fields": "userEnteredValue"}
     request_body = {"requests": [{"updateCells": updateCells}]}
 
     spreadsheets = service.spreadsheets()

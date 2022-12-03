@@ -12,6 +12,7 @@ from pathlib import Path
 import pandas as pd
 
 from src.common.google_api_helpers import (
+    GridRangeType,
     clear_values_in_worksheet,
     copy_worksheet,
     create_worksheet,
@@ -157,15 +158,34 @@ def test_clear_values_in_worksheet() -> None:
     :return:
     """
     SPREADSHEET_ID = "1giRkGWGEw18NYc1b7LhxYvq9eRBF2F-XMJv_i_LG3tE"
-    sheetId = 81190407
     service = get_google_creds(
         creds_directory="google_creds",
         scopes=["https://www.googleapis.com/auth/spreadsheets"],
     )
+
+    sheetId = 770948470
+    startRowIndex = 0
+    endRowIndex = 3
+    startColumnIndex = 0
+    endColumnIndex = 3
+    GridRange = GridRangeType(
+        sheetId, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex
+    )
+
     response = clear_values_in_worksheet(
         service=service,
         spreadsheetId=SPREADSHEET_ID,
-        sheetId=sheetId,
+        GridRange=GridRange,
+    )
+    assert response is not None
+
+    time.sleep(10)
+
+    GridRange = {"sheetId": sheetId}
+    response = clear_values_in_worksheet(
+        service=service,
+        spreadsheetId=SPREADSHEET_ID,
+        GridRange=GridRange,
     )
     assert response is not None
 
